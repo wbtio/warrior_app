@@ -50,9 +50,26 @@ export const fetchTasks = createAsyncThunk(
 export const createTask = createAsyncThunk(
     'tasks/createTask',
     async (task: Omit<Task, 'id' | 'created_at' | 'updated_at' | 'xp'>) => {
+        // حساب XP المتوقع بناءً على الوقت المقدّر ومعامل الصعوبة
+        let calculatedXP = 0;
+        
+        // إذا كان لدينا وقت البداية والنهاية، احسب XP الفعلي
+        if (task.start_time && task.end_time) {
+            calculatedXP = calculateXP(
+                new Date(task.start_time),
+                new Date(task.end_time),
+                task.difficulty_factor
+            );
+        }
+
+        const taskWithXP = {
+            ...task,
+            xp: calculatedXP
+        };
+
         const { data, error } = await supabase
             .from('tasks')
-            .insert(task)
+            .insert(taskWithXP)
             .select()
             .single();
 
@@ -65,16 +82,32 @@ export const createTask = createAsyncThunk(
 export const updateTask = createAsyncThunk(
     'tasks/updateTask',
     async ({ id, updates }: { id: string; updates: Partial<Task> }) => {
+        // جلب المهمة الحالية للحصول على البيانات الناقصة
+        const { data: currentTask } = await supabase
+            .from('tasks')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (!currentTask) throw new Error('المهمة غير موجودة');
+
         // إذا تم تحديث النهاية، احسب XP
         let finalUpdates = { ...updates };
 
-        if (updates.end_time && updates.start_time && updates.difficulty_factor) {
-            const xp = calculateXP(
-                new Date(updates.start_time),
-                new Date(updates.end_time),
-                updates.difficulty_factor
-            );
-            finalUpdates.xp = xp;
+        // حساب XP عند إكمال المهمة
+        if (updates.status === 'completed' || (updates.end_time && updates.start_time)) {
+            const startTime = updates.start_time || currentTask.start_time;
+            const endTime = updates.end_time || new Date().toISOString();
+            const difficultyFactor = updates.difficulty_factor || currentTask.difficulty_factor;
+
+            if (startTime && endTime) {
+                const xp = calculateXP(
+                    new Date(startTime),
+                    new Date(endTime),
+                    difficultyFactor
+                );
+                finalUpdates.xp = xp;
+            }
         }
 
         const { data, error } = await supabase

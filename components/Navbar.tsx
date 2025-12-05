@@ -6,12 +6,13 @@ import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { signOut } from '@/store/authSlice';
 import { clearProfile } from '@/store/profileSlice';
 import {
-    RocketIcon,
     PersonIcon,
     StarIcon,
     ArchiveIcon,
     LightningBoltIcon,
     ExitIcon,
+    RocketIcon,
+    TargetIcon,
 } from '@radix-ui/react-icons';
 
 export function Navbar() {
@@ -40,7 +41,7 @@ export function Navbar() {
                     {/* اللوجو */}
                     <Link href="/battlefield" className="flex items-center gap-3">
                         <div className="w-9 h-9 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center">
-                            <RocketIcon className="w-5 h-5 text-white" />
+                            <TargetIcon className="w-5 h-5 text-white" />
                         </div>
                         <span className="font-bold text-xl text-white">المحارب</span>
                     </Link>

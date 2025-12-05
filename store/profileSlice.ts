@@ -100,7 +100,7 @@ export const fetchStats = createAsyncThunk(
             completedTasksToday: todayCount || 0,
             completedTasksThisWeek: weekCount || 0,
             totalCompletedTasks: totalCount || 0,
-            canUnlockThroneRoom: (totalCount || 0) >= 10, // يمكن فتح قاعة العرش بعد 10 مهام
+            canUnlockThroneRoom: (totalCount || 0) >= 3, // يمكن فتح قاعة العرش بعد 3 مهام
         };
     }
 );
